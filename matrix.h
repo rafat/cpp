@@ -140,6 +140,13 @@ public:
     }
   }
 
+  void diag(vector<T> &vec) {
+    int N = vec.size();
+    eye(N);
+    for (int i = 0; i < N; i++)
+      mdata[i * mcols + i] = vec[i] * mdata[i * mcols + i];
+  }
+
 
   virtual ~mat() {
   }

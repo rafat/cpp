@@ -27,7 +27,7 @@ int main() {
   matrix.disp();
   vector<double> getvec;
   matrix.getData(getvec);
-  for (int i = 0; i < getvec.size(); i++)
+  for (int i = 0; i < (int) getvec.size(); i++)
     cout << getvec[i] << " " << endl;
   matsum = matrix + matrix2;
   matsum.disp();
@@ -44,6 +44,14 @@ int main() {
   matmult.disp();
   mat<double> etest;
   etest.eye(4);
+  etest.disp();
+
+  vector<double> vec1;
+  vec1.push_back(1.0);
+  vec1.push_back(7.0);
+  vec1.push_back(6.2);
+
+  etest.diag(vec1);
   etest.disp();
   
   return 0;
