@@ -9,12 +9,13 @@
 
 using namespace std;
 
-template <Typename T>
+template <typename T>
 class series {
   vector<T> data;
   vector<string> index;
   vector<int> pseudo;
-  int dimension = 1;
+  int dimension;
+  mat<T> matrix;
 
 public:
   series(vector<T> &signal) {
@@ -26,6 +27,8 @@ public:
     }
     
     data = signal;
+    matrix.setMatrix(1,lensig,data);
+    dimension = 1;
   }
 
   series(vector<T> &signal, vector<string> &ind) {
@@ -37,29 +40,37 @@ public:
     
     data = signal;
     index = ind;
-
-
+    matrix.setMatrix(1,lensig,data);
+    dimension = 1;
   }
 
   series(mat<T> &signal) {
     dimension = signal.rows();
     vector<T> sigvec;
-    data = signal.getData(sigvec);
+    signal.getData(sigvec);
+    data = sigvec;
     for (int i = 0; i < signal.cols(); i++) {
       pseudo.push_back(i);
     }
+    matrix = signal;
    
   }
 
   series(mat<T> &signal, vector<string> &ind) {
     dimension = signal.rows();
     vector<T> sigvec;
-    data = signal.getData(sigvec);
+    signal.getData(sigvec);
+    data = sigvec;
     for (int i = 0; i < signal.cols(); i++) {
       pseudo.push_back(i);
     }
     index = ind;
+    matrix = signal;
    
+  }
+
+  void getData(vector<T> &datavec) {
+    datavec = data;
   }
 
   virtual ~series() {}

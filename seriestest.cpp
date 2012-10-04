@@ -2,7 +2,7 @@
 #include <cmath>
 #include <vector>
 #include <string>
-#include "matrix.h"
+#include "series.h"
 
 using namespace std;
 
@@ -12,17 +12,16 @@ int main() {
   mat<double> matrix(row,col);
   for (int i=0; i < row; i++) {
     for (int j=0; j < col; j++) {
-      matrix(i,j) = i*col +j;
+      matrix(i,j) =(double) i*col +j;
     }
   }
-  cout << matrix(4,4) << endl;
-  // matrix.ones();
-  //cout << matrix(4,4) << endl;
+  series<double> dseries(matrix);
+  
   matrix.disp();
-  vector<double> getvec;
-  matrix.getData(getvec);
-  for (int i = 0; i < getvec.size(); i++)
-    cout << getvec[i] << " " << endl;
+  vector<double> datavec;
+  dseries.getData(datavec);
+  for (int i = 0; i < (int) datavec.size(); i++)
+    cout << datavec[i] << " ";
   return 0;
 
 }

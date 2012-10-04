@@ -15,6 +15,9 @@ class mat {
   vector<T> mdata;
 
 public:
+  mat() {
+
+  }
   mat(int r, int c) {
     mrows = r;
     mcols = c;
@@ -67,6 +70,12 @@ public:
       }
       cout << endl;
     }
+  }
+
+  void setMatrix(int r, int c, vector<T> &datval) {
+    mrows = r;
+    mcols = c;
+    mdata = datval;
   }
 
   void getData(vector<T> &send_data) {
