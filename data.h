@@ -8,7 +8,7 @@
 
 using namespace std;
 
-template <Typename T>
+template <typename T>
 class data {
 
 public:
