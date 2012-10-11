@@ -81,7 +81,64 @@ public:
   void getData(vector<T> &send_data) {
     send_data = mdata;
   }
-    
+
+  mat operator+ (mat &B) {
+    mat<T> temp(mrows,mcols);
+    if ( ( mrows == B.rows() ) && (mcols == B.cols())) {
+      for (int i = 0; i < (int) B.rows();i++) {
+	for (int j = 0; j < (int) B.cols();j++) {
+	  temp(i,j) = mdata[i * mcols + j] + B(i,j);
+	}
+      }
+    }
+    else {
+      cout << " Matrix Dimensions Must Agree" << endl;
+    }
+    return temp;
+  }
+
+  mat operator- (mat &B) {
+    mat<T> temp(mrows,mcols);
+    if ( ( mrows == B.rows() ) && (mcols == B.cols())) {
+      for (int i = 0; i < (int) B.rows();i++) {
+	for (int j = 0; j < (int) B.cols();j++) {
+	  temp(i,j) = mdata[i * mcols + j] - B(i,j);
+	}
+      }
+    }
+    else {
+      cout << " Matrix Dimensions Must Agree" << endl;
+    }
+    return temp;
+  }
+
+  mat operator* (mat &B) {
+    mat<T> temp(mrows,B.cols());
+    if ( mcols == B.rows()) {
+      for (int i = 0; i < (int) mrows;i++) {
+	for (int j = 0; j < B.cols(); j++) {
+	  T temp2 =(T) 0.0;
+	  for (int k = 0; k < B.rows();k++) {
+	    temp2 = temp2 + mdata[i*mcols+k]* B(k,j);
+	  }
+	  temp(i,j) = temp2;
+	}
+      }
+    }
+    else {
+      cout << " Matrix Dimensions Must Agree" << endl;
+    }
+    return temp;
+  }
+
+  void eye(int N) {
+    mrows = N;
+    mcols = N;
+    zeros();
+    for (int i = 0; i < N; i++) {
+      mdata[i*mcols+i] = (T) 1.0;
+    }
+  }
 
 
   virtual ~mat() {
