@@ -4,6 +4,7 @@
 #include <complex>
 #include <vector>
 #include <string>
+#include "cycle.h"
 
 
 using namespace std;
@@ -119,7 +120,7 @@ void inline fft(vector<complex<double> > &data, int sign,unsigned int N){
   
 }
 
-void AQjk(vector< complex<double> > &x, int q, int sgn) {
+void AQkj(vector< complex<double> > &x, int q, int sgn) {
   int n = x.size();
   int L = (int) pow(2.0, (double)q);
   int Ls = L / 2;
@@ -134,7 +135,27 @@ void AQjk(vector< complex<double> > &x, int q, int sgn) {
   for (int k = 0; k < r; k++) {
     for (int j = 0; j < Ls; j++) {
       tau =complex<double>( real(wl[j]) * real( x[k*L+j+Ls])- imag(wl[j]) * imag( x[k*L+j+Ls]),real(wl[j]) * imag( x[k*L+j+Ls])+ imag(wl[j]) * real( x[k*L+j+Ls]) ) ;
-      cout << "tau" << tau << endl;
+      x[k*L+j+Ls] = x[k*L+j] - tau;
+      x[k*L+j] = x[k*L+j] + tau;
+    }
+      
+  }
+}
+
+void AQjk(vector< complex<double> > &x, int q, int sgn) {
+  int n = x.size();
+  int L = (int) pow(2.0, (double)q);
+  int Ls = L / 2;
+  int r = n / L;
+  vector<complex<double> > wl;
+  double sn = (double) -1.0 * sgn;
+
+  complex<double> tau;
+
+  for (int j = 0; j < Ls; j++) {
+    wl.push_back(complex<double>(cos(2*PI*j/L),sn * sin(2*PI*j/L)));
+    for (int k = 0; k < r; k++) {
+      tau =complex<double>( real(wl[j]) * real( x[k*L+j+Ls])- imag(wl[j]) * imag( x[k*L+j+Ls]),real(wl[j]) * imag( x[k*L+j+Ls])+ imag(wl[j]) * real( x[k*L+j+Ls]) ) ;
       x[k*L+j+Ls] = x[k*L+j] - tau;
       x[k*L+j] = x[k*L+j] + tau;
     }
@@ -162,10 +183,9 @@ void fftct(vector<complex<double> > &data,int sgn, unsigned int N) {
 
   bitreverse(data);
   int t = (int) ceil(log10(static_cast<double>(N))/log10(2.0));
-  cout << "t" << t << endl;
 
   for (int i=1; i < t+1; i++) {
-    AQjk(data,i,sgn);
+    AQkj(data,i,sgn);
     
   }
 
@@ -201,7 +221,7 @@ void convfft(vector<double> &a, vector<double> &b, vector<double> &c) {
 
 
 int main() {
-  int N = 64;
+  int N = 1024;
   vector<complex<double> > signal;
   for (int i =0; i < N; i++){
     signal.push_back(complex<double>((double)i, 0.0));
@@ -210,9 +230,18 @@ int main() {
   vector<complex<double> > sig1,sig2;
   sig1=signal;
   sig2=signal;
+  
+  double tdl, tct;
+  ticks t0 = getticks();
 
   fft(sig1,1,N);
+  ticks t1 = getticks();
+  ticks t2 = getticks();
   fftct(sig2,1,N);
+  ticks t3 = getticks();
+
+  tdl = elapsed(t1,t0);
+  tct = elapsed(t3,t2);
   
   for (int i =0; i < N; i++){
     cout << real(sig2[i])-real(sig1[i]) << " " << imag(sig2[i])-imag(sig1[i]) << endl;
@@ -224,5 +253,8 @@ int main() {
   for (int i =0; i < N; i++){
     cout << (real(sig2[i]) / N) << " " << (imag(sig2[i])/N) << endl;
     }
+
+  cout << "tdl : " << tdl << "  " << "tct : " << tct << endl;
+  
   return 0;
 }
