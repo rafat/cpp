@@ -119,7 +119,7 @@ void inline fft(vector<complex<double> > &data, int sign,unsigned int N){
   
 }
 
-void AQjk(vector< complex<double> > &x, int q, unsigned int sgn) {
+void AQjk(vector< complex<double> > &x, int q, int sgn) {
   int n = x.size();
   int L = (int) pow(2.0, (double)q);
   int Ls = L / 2;
@@ -142,7 +142,7 @@ void AQjk(vector< complex<double> > &x, int q, unsigned int sgn) {
   }
 }
 
-void fftct(vector<complex<double> > &data,unsigned int sgn, unsigned int N) {
+void fftct(vector<complex<double> > &data,int sgn, unsigned int N) {
   unsigned int len = data.size();
   vector<complex<double> >::iterator it;
   it = data.end();
@@ -204,7 +204,7 @@ int main() {
   int N = 64;
   vector<complex<double> > signal;
   for (int i =0; i < N; i++){
-    signal.push_back(complex<double>(i, 0.0));
+    signal.push_back(complex<double>((double)i, 0.0));
     cout << real(signal[i]) << " " << imag(signal[i]) << endl;
   }
   vector<complex<double> > sig1,sig2;
@@ -221,8 +221,8 @@ int main() {
   fftct(sig2,-1,N);
   fft(sig1,-1,N);
   cout << "IFFT - signal" << endl;
-  /*for (int i =0; i < N; i++){
+  for (int i =0; i < N; i++){
     cout << (real(sig2[i]) / N) << " " << (imag(sig2[i])/N) << endl;
-    }*/
+    }
   return 0;
 }
