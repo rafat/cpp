@@ -120,21 +120,53 @@ void inline fft(vector<complex<double> > &data, int sign,unsigned int N){
   
 }
 
-void AQkj(vector< complex<double> > &x, int q, int sgn) {
+void TSHkj(vector< complex<double> > &x, int q, int sgn, vector<double> &wrlong, vector<double> &wilong) {
   int n = x.size();
   int L = (int) pow(2.0, (double)q);
   int Ls = L / 2;
   int r = n / L;
-  vector<complex<double> > wl;
-  double sn = (double) -1.0 * sgn;
+  vector<double> wlr,wli;
+  int t = (int) ceil(log10(static_cast<double>(n))/log10(2.0));
+  int step = (int) pow((double)2, (double) t-q);
   for (int j = 0; j < Ls; j++) {
-    wl.push_back(complex<double>(cos(2*PI*j/L),sn * sin(2*PI*j/L)));
+    wlr.push_back(wrlong[j*step]);
+    wli.push_back(wilong[j*step]);
+  }
+  complex<double> tau;
+  vector< complex<double> > y = x;
+  
+
+  for (int k = 0; k < r; k++) {
+    for (int j = 0; j < Ls; j++) {
+      double xlsr = real( y[(k+r)*Ls+j]);
+      double xlsi = imag( y[(k+r)*Ls+j]);
+      tau =complex<double>( wlr[j] * xlsr - wli[j] * xlsi,wlr[j] * xlsi + wli[j] * xlsr );
+      x[k*L+j+Ls] = y[k*Ls+j] - tau;
+      x[k*L+j] = y[k*Ls+j] + tau;
+    }
+      
+  }
+}
+
+void AQkj(vector< complex<double> > &x, int q, int sgn, vector<double> &wrlong, vector<double> &wilong) {
+  int n = x.size();
+  int L = (int) pow(2.0, (double)q);
+  int Ls = L / 2;
+  int r = n / L;
+  vector<double> wlr,wli;
+  int t = (int) ceil(log10(static_cast<double>(n))/log10(2.0));
+  int step = (int) pow((double)2, (double) t-q);
+  for (int j = 0; j < Ls; j++) {
+    wlr.push_back(wrlong[j*step]);
+    wli.push_back(wilong[j*step]);
   }
   complex<double> tau;
 
   for (int k = 0; k < r; k++) {
     for (int j = 0; j < Ls; j++) {
-      tau =complex<double>( real(wl[j]) * real( x[k*L+j+Ls])- imag(wl[j]) * imag( x[k*L+j+Ls]),real(wl[j]) * imag( x[k*L+j+Ls])+ imag(wl[j]) * real( x[k*L+j+Ls]) ) ;
+      double xlsr = real( x[k*L+j+Ls]);
+      double xlsi = imag( x[k*L+j+Ls]);
+      tau =complex<double>( wlr[j] * xlsr - wli[j] * xlsi,wlr[j] * xlsi + wli[j] * xlsr );
       x[k*L+j+Ls] = x[k*L+j] - tau;
       x[k*L+j] = x[k*L+j] + tau;
     }
@@ -147,15 +179,20 @@ void AQjk(vector< complex<double> > &x, int q, int sgn) {
   int L = (int) pow(2.0, (double)q);
   int Ls = L / 2;
   int r = n / L;
-  vector<complex<double> > wl;
+  //vector<complex<double> > wl;
   double sn = (double) -1.0 * sgn;
 
   complex<double> tau;
 
   for (int j = 0; j < Ls; j++) {
-    wl.push_back(complex<double>(cos(2*PI*j/L),sn * sin(2*PI*j/L)));
+    //wl.push_back(complex<double>(cos(2*PI*j/L),sn *sin(2*PI*j/L) ));
+    double theta = 2*PI*j/L;
+    double wlr = cos(theta);
+    double wli = sn * sin(theta);
     for (int k = 0; k < r; k++) {
-      tau =complex<double>( real(wl[j]) * real( x[k*L+j+Ls])- imag(wl[j]) * imag( x[k*L+j+Ls]),real(wl[j]) * imag( x[k*L+j+Ls])+ imag(wl[j]) * real( x[k*L+j+Ls]) ) ;
+      double xlsr = real( x[k*L+j+Ls]);
+      double xlsi = imag( x[k*L+j+Ls]);
+      tau =complex<double>( wlr * xlsr - wli * xlsi,wlr * xlsi + wli * xlsr ) ;
       x[k*L+j+Ls] = x[k*L+j] - tau;
       x[k*L+j] = x[k*L+j] + tau;
     }
@@ -185,7 +222,80 @@ void fftct(vector<complex<double> > &data,int sgn, unsigned int N) {
   int t = (int) ceil(log10(static_cast<double>(N))/log10(2.0));
 
   for (int i=1; i < t+1; i++) {
-    AQkj(data,i,sgn);
+    AQjk(data,i,sgn);
+    
+  }
+
+}
+
+void fftct2(vector<complex<double> > &data,int sgn, unsigned int N) {
+  unsigned int len = data.size();
+  vector<complex<double> >::iterator it;
+  it = data.end();
+  if ( len != N) {
+    unsigned int al = N - len;
+    data.insert(it,al,complex<double>(0,0));
+  }
+
+  unsigned int K = (unsigned int) pow(2.0,ceil(log10(static_cast<double>(N))/log10(2.0)));
+  vector<complex<double> >::iterator it1;
+  it1 = data.end();
+  if ( N < K) {
+    unsigned int al = K - N;
+    data.insert(it1,al,complex<double>(0,0));
+    N = K;
+  }
+
+  bitreverse(data);
+  int t = (int) ceil(log10(static_cast<double>(N))/log10(2.0));
+
+  int L = (int) pow(2.0, (double)t);
+  int Ls = L / 2;
+  vector<double> wrlong,wilong;
+  double sn = (double) -1.0 * sgn;
+  for (int j = 0; j < Ls; j++) {
+    wrlong.push_back(cos(2*PI*j/L));
+    wilong.push_back(sn * sin(2*PI*j/L));
+  }
+
+  for (int i=1; i < t+1; i++) {
+    AQkj(data,i,sgn,wrlong,wilong);
+    
+  }
+
+}
+
+void fft_tsh(vector<complex<double> > &data,int sgn, unsigned int N) {
+  unsigned int len = data.size();
+  vector<complex<double> >::iterator it;
+  it = data.end();
+  if ( len != N) {
+    unsigned int al = N - len;
+    data.insert(it,al,complex<double>(0,0));
+  }
+
+  unsigned int K = (unsigned int) pow(2.0,ceil(log10(static_cast<double>(N))/log10(2.0)));
+  vector<complex<double> >::iterator it1;
+  it1 = data.end();
+  if ( N < K) {
+    unsigned int al = K - N;
+    data.insert(it1,al,complex<double>(0,0));
+    N = K;
+  }
+
+  int t = (int) ceil(log10(static_cast<double>(N))/log10(2.0));
+
+  int L = (int) pow(2.0, (double)t);
+  int Ls = L / 2;
+  vector<double> wrlong,wilong;
+  double sn = (double) -1.0 * sgn;
+  for (int j = 0; j < Ls; j++) {
+    wrlong.push_back(cos(2*PI*j/L));
+    wilong.push_back(sn * sin(2*PI*j/L));
+  }
+
+  for (int i=1; i < t+1; i++) {
+    TSHkj(data,i,sgn,wrlong,wilong);
     
   }
 
@@ -221,7 +331,7 @@ void convfft(vector<double> &a, vector<double> &b, vector<double> &c) {
 
 
 int main() {
-  int N = 1024;
+  int N = 64;
   vector<complex<double> > signal;
   for (int i =0; i < N; i++){
     signal.push_back(complex<double>((double)i, 0.0));
@@ -234,10 +344,10 @@ int main() {
   double tdl, tct;
   ticks t0 = getticks();
 
-  fft(sig1,1,N);
+  fftct(sig1,1,N);
   ticks t1 = getticks();
   ticks t2 = getticks();
-  fftct(sig2,1,N);
+  fft_tsh(sig2,1,N);
   ticks t3 = getticks();
 
   tdl = elapsed(t1,t0);
@@ -247,8 +357,8 @@ int main() {
     cout << real(sig2[i])-real(sig1[i]) << " " << imag(sig2[i])-imag(sig1[i]) << endl;
   }
   //IFFT
-  fftct(sig2,-1,N);
-  fft(sig1,-1,N);
+  fftct(sig1,-1,N);
+  fft_tsh(sig2,-1,N);
   cout << "IFFT - signal" << endl;
   for (int i =0; i < N; i++){
     cout << (real(sig2[i]) / N) << " " << (imag(sig2[i])/N) << endl;
