@@ -9,7 +9,7 @@
 
 using namespace std;
 
-#define PI -3.14159265
+#define PI 3.14159265
 
 void inline bitreverse(vector<complex<double> > &sig) {
   unsigned int len = sig.size();
@@ -211,7 +211,7 @@ void AQjk(vector< complex<double> > &x, int q, int sgn) {
   //double sn = (double) -1.0 * sgn;
   double pi;
   if (sgn == 1 || sgn == -1) {
-    pi = PI * sgn;
+    pi = -1.0 * PI * sgn;
   } else {
     cout << "Please enter either 1(FFT) or -1(IFFT) for integer value sgn." << endl;
   }
