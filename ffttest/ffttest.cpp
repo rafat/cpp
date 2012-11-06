@@ -9,7 +9,7 @@
 
 using namespace std;
 
-#define PI 3.14159265
+#define PI -3.14159265
 
 void inline bitreverse(vector<complex<double> > &sig) {
   unsigned int len = sig.size();
@@ -174,15 +174,17 @@ void AQkj(vector< complex<double> > &x, int q, int sgn, vector<double> &wrlong, 
   }
 }
 
-void AQjk(vector< complex<double> > &x, int q, int sgn) {
+void SHjk(vector< complex<double> > &x, int q, int sgn) {
   int n = x.size();
   int L = (int) pow(2.0, (double)q);
   int Ls = L / 2;
   int r = n / L;
+  int rs = n / Ls;
   //vector<complex<double> > wl;
   double sn = (double) -1.0 * sgn;
 
   complex<double> tau;
+  vector<complex<double> > y = x;
 
   for (int j = 0; j < Ls; j++) {
     //wl.push_back(complex<double>(cos(2*PI*j/L),sn *sin(2*PI*j/L) ));
@@ -190,12 +192,55 @@ void AQjk(vector< complex<double> > &x, int q, int sgn) {
     double wlr = cos(theta);
     double wli = sn * sin(theta);
     for (int k = 0; k < r; k++) {
+      double xlsr = real( y[j*rs+k+r]);
+      double xlsi = imag( y[j*rs+k+r]);
+      tau =complex<double>( wlr * xlsr - wli * xlsi,wlr * xlsi + wli * xlsr ) ;
+      x[(j+Ls)*r+k] = y[j*rs+k] - tau;
+      x[j*r+k] = y[j*rs+k] + tau;
+    }
+      
+  }
+}
+
+void AQjk(vector< complex<double> > &x, int q, int sgn) {
+  int n = x.size();
+  int L = (int) pow(2.0, (double)q);
+  int Ls = L / 2;
+  int r = n / L;
+  //vector<complex<double> > wl;
+  //double sn = (double) -1.0 * sgn;
+  double pi;
+  if (sgn == 1 || sgn == -1) {
+    pi = PI * sgn;
+  } else {
+    cout << "Please enter either 1(FFT) or -1(IFFT) for integer value sgn." << endl;
+  }
+    
+
+  complex<double> tau;
+  double theta = 2*pi/L;
+  double S = sin(theta);
+  double C = cos(theta);
+  double wlr = 1.0;
+  double wli = 0.0;
+
+  for (int j = 0; j < Ls; j++) {
+    //wl.push_back(complex<double>(cos(2*PI*j/L),sn *sin(2*PI*j/L) ));
+    //double theta = 2*PI*j/L;
+    //double wlr = cos(theta);
+    //double wli = sn * sin(theta);
+    for (int k = 0; k < r; k++) {
       double xlsr = real( x[k*L+j+Ls]);
       double xlsi = imag( x[k*L+j+Ls]);
       tau =complex<double>( wlr * xlsr - wli * xlsi,wlr * xlsi + wli * xlsr ) ;
       x[k*L+j+Ls] = x[k*L+j] - tau;
       x[k*L+j] = x[k*L+j] + tau;
     }
+    
+    double temp = wlr;
+    wlr = C * wlr - S * wli;
+    wli = S * temp + C * wli;
+    
       
   }
 }
@@ -223,6 +268,33 @@ void fftct(vector<complex<double> > &data,int sgn, unsigned int N) {
 
   for (int i=1; i < t+1; i++) {
     AQjk(data,i,sgn);
+    
+  }
+
+}
+
+void fft_sh(vector<complex<double> > &data,int sgn, unsigned int N) {
+  unsigned int len = data.size();
+  vector<complex<double> >::iterator it;
+  it = data.end();
+  if ( len != N) {
+    unsigned int al = N - len;
+    data.insert(it,al,complex<double>(0,0));
+  }
+
+  unsigned int K = (unsigned int) pow(2.0,ceil(log10(static_cast<double>(N))/log10(2.0)));
+  vector<complex<double> >::iterator it1;
+  it1 = data.end();
+  if ( N < K) {
+    unsigned int al = K - N;
+    data.insert(it1,al,complex<double>(0,0));
+    N = K;
+  }
+
+  int t = (int) ceil(log10(static_cast<double>(N))/log10(2.0));
+
+  for (int i=1; i < t+1; i++) {
+    SHjk(data,i,sgn);
     
   }
 
@@ -344,10 +416,10 @@ int main() {
   double tdl, tct;
   ticks t0 = getticks();
 
-  fftct(sig1,1,N);
+  fft(sig1,1,N);
   ticks t1 = getticks();
   ticks t2 = getticks();
-  fft_tsh(sig2,1,N);
+  fftct(sig2,1,N);
   ticks t3 = getticks();
 
   tdl = elapsed(t1,t0);
@@ -357,8 +429,8 @@ int main() {
     cout << real(sig2[i])-real(sig1[i]) << " " << imag(sig2[i])-imag(sig1[i]) << endl;
   }
   //IFFT
-  fftct(sig1,-1,N);
-  fft_tsh(sig2,-1,N);
+  fft(sig1,-1,N);
+  fftct(sig2,-1,N);
   cout << "IFFT - signal" << endl;
   for (int i =0; i < N; i++){
     cout << (real(sig2[i]) / N) << " " << (imag(sig2[i])/N) << endl;
